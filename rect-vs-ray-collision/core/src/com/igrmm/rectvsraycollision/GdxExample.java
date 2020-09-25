@@ -35,16 +35,25 @@ public class GdxExample extends ApplicationAdapter {
 		shape.setProjectionMatrix(cam.combined);
 
 		batch.begin();
-		font.draw(batch, "Hello World!", 0, Gdx.graphics.getHeight());
+		font.draw(batch, mx() + " " + my(), 0, Gdx.graphics.getHeight());
 		batch.end();
 
 		shape.begin(ShapeRenderer.ShapeType.Filled);
-		shape.rect(Gdx.graphics.getWidth() / 2.0f - 50.0f, Gdx.graphics.getHeight() / 2.0f - 50.0f, 100.0f, 100.0f);
+		shape.rect(mx(), my(), 100.0f, 100.0f);
 		shape.end();
+	}
+
+	public float mx() {
+		return (float) Gdx.input.getX();
+	}
+
+	public float my() {
+		return (float) Gdx.graphics.getHeight() - Gdx.input.getY();
 	}
 
 	@Override
 	public void dispose() {
 		batch.dispose();
+		font.dispose();
 	}
 }
