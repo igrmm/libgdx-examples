@@ -53,39 +53,52 @@ public class GdxExample extends ApplicationAdapter {
 		shape.end();
 	}
 
-	public boolean rayVsRect(Vector2 rayOrigin, Vector2 rayDir, Rectangle rect, Vector2 contactPoint) {
-		contactPoint.set(0, 0);
+	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contact) {
 
-		Vector2 targetPos = new Vector2();
-		rect.getPosition(targetPos);
-		Vector2 targetSize = new Vector2();
-		rect.getSize(targetSize);
+		/*
+			    Ray equation
+		        contact = ray0 + ray1 * tMin
+		*/
 
-		Vector2 invDir = new Vector2(1.0f / rayDir.x, 1.0f / rayDir.y);
-		Vector2 tNear = (targetPos.cpy().sub(rayOrigin)).scl(invDir);
-		Vector2 tFar = (targetPos.cpy().add(targetSize).sub(rayOrigin)).scl(invDir);
+		// t value for ray to contact line defined by rect.x
+		float t0X = (rect.x - ray0.x) / ray1.x;
 
-		if (tNear.x > tFar.x) {
-			float tmp = tNear.x;
-			tNear.x = tFar.x;
-			tFar.x = tmp;
+		// t value for ray to contact line defined by rect.y
+		float t0Y = (rect.y - ray0.y) / ray1.y;
+
+		// t value for ray to contact line defined by (rect.x + rect.width)
+		float t1X = (rect.x + rect.width - ray0.x) / ray1.x;
+
+		// t value for ray to contact line defined by (rect.y + rect.height)
+		float t1Y = (rect.y + rect.height - ray0.y) / ray1.y;
+
+		//swap values
+		if (t0X > t1X) {
+			float tmp = t0X;
+			t0X = t1X;
+			t1X = tmp;
 		}
 
-		if (tNear.y > tFar.y) {
-			float tmp = tNear.y;
-			tNear.y = tFar.y;
-			tFar.y = tmp;
+		//swap values
+		if (t0Y > t1Y) {
+			float tmp = t0Y;
+			t0Y = t1Y;
+			t1Y = tmp;
 		}
 
-		if (tNear.x > tFar.y || tNear.y > tFar.x) return false;
+		//non-contact condition
+		if (t0X > t1Y || t0Y > t1X) return false;
 
-		float tHitNear = Math.max(tNear.x, tNear.y);
-		if (tHitNear > 1.0f) return false;
+		//t value for ray to first contact with rectangle
+		float tMin = Math.max(t0X, t0Y);
+		if (tMin > 1.0f) return false;
 
-		float tHitFar = Math.min(tFar.x, tFar.y);
-		if (tHitFar < 0) return false;
+		//t value for ray to last contact with rectangle
+		float tMax = Math.min(t1X, t1Y);
+		if (tMax < 0) return false;
 
-		contactPoint.set(rayOrigin.cpy().add(rayDir.cpy().scl(tHitNear)));
+		//set contact point from ray equation with t value
+		contact.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
 
 		return true;
 	}
