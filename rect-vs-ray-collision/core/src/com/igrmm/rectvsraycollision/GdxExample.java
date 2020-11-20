@@ -53,7 +53,7 @@ public class GdxExample extends ApplicationAdapter {
 		shape.end();
 	}
 
-	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contact) {
+	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contactPoint) {
 
 		/*
 			    Ray equation
@@ -98,7 +98,7 @@ public class GdxExample extends ApplicationAdapter {
 		if (tMax < 0) return false;
 
 		//set contact point from ray equation with t value
-		contact.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
+		contactPoint.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
 
 		return true;
 	}
