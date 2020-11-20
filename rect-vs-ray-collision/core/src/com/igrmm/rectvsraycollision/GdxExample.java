@@ -18,6 +18,7 @@ public class GdxExample extends ApplicationAdapter {
 	Vector2 rayOrigin;
 	Vector2 rayDir;
 	Vector2 contactPoint;
+	Vector2 contactNormal;
 
 	@Override
 	public void create() {
@@ -27,6 +28,7 @@ public class GdxExample extends ApplicationAdapter {
 		rayOrigin = new Vector2();
 		rayDir = new Vector2();
 		contactPoint = new Vector2();
+		contactNormal = new Vector2();
 	}
 
 	@Override
@@ -45,7 +47,11 @@ public class GdxExample extends ApplicationAdapter {
 		//Drawing
 		shape.begin(ShapeRenderer.ShapeType.Filled);
 		shape.setColor(Color.WHITE);
-		if (rayVsRect(rayOrigin, rayDir, rect, contactPoint)) shape.setColor(Color.BLUE);
+		if (rayVsRect(rayOrigin, rayDir, rect, contactPoint, contactNormal)) {
+			shape.setColor(Color.BLUE);
+			shape.line(contactPoint.x, contactPoint.y, (contactPoint.x + contactNormal.x * 20.0f), (contactPoint.y + contactNormal.y * 20.0f));
+			shape.setColor(Color.WHITE);
+		}
 		shape.rect(rect.x, rect.y, rect.width, rect.height);
 		shape.setColor(Color.RED);
 		shape.line(rayOrigin.x, rayOrigin.y, mx(), my());
@@ -53,7 +59,7 @@ public class GdxExample extends ApplicationAdapter {
 		shape.end();
 	}
 
-	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contactPoint) {
+	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contactPoint, Vector2 contactNormal) {
 
 		/*
 			    Ray equation
@@ -99,6 +105,19 @@ public class GdxExample extends ApplicationAdapter {
 
 		//set contact point from ray equation with t value
 		contactPoint.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
+
+		//set contact normal for collision solving
+		if (t0X > t0Y) {
+			if (ray0.x < 0)
+				contactNormal.set(1, 0);
+			else
+				contactNormal.set(-1, 0);
+		} else if (t0X < t0Y) {
+			if (ray0.y < 0)
+				contactNormal.set(0, 1);
+			else
+				contactNormal.set(0, -1);
+		}
 
 		return true;
 	}
