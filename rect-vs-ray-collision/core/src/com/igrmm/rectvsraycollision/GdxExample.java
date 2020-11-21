@@ -15,8 +15,9 @@ public class GdxExample extends ApplicationAdapter {
 	ShapeRenderer shape;
 
 	Rectangle rect;
-	Vector2 rayOrigin;
-	Vector2 rayDir;
+	Rectangle dynamicRect;
+	Rectangle expandedRect;
+	Vector2 velocity;
 	Vector2 contactPoint;
 	Vector2 contactNormal;
 
@@ -25,8 +26,9 @@ public class GdxExample extends ApplicationAdapter {
 		cam = new OrthographicCamera();
 		shape = new ShapeRenderer();
 		rect = new Rectangle(0.0f, 0.0f, 100.0f, 100.0f);
-		rayOrigin = new Vector2();
-		rayDir = new Vector2();
+		dynamicRect = new Rectangle(0.0f, 200.0f, 100.0f, 100.0f);
+		expandedRect = new Rectangle();
+		velocity = new Vector2(5.0f, 0.0f);
 		contactPoint = new Vector2();
 		contactNormal = new Vector2();
 	}
@@ -42,20 +44,19 @@ public class GdxExample extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		cam.update();
 		shape.setProjectionMatrix(cam.combined);
-		rayDir.set(mx() - rayOrigin.x, my() - rayOrigin.y);
+
+		//Simulation
+		if (!dynamicRectVsRect(dynamicRect, rect, velocity, contactPoint, contactNormal, expandedRect)) {
+			dynamicRect.x += velocity.x;
+		}
 
 		//Drawing
 		shape.begin(ShapeRenderer.ShapeType.Filled);
 		shape.setColor(Color.WHITE);
-		if (rayVsRect(rayOrigin, rayDir, rect, contactPoint, contactNormal)) {
-			shape.setColor(Color.BLUE);
-			shape.line(contactPoint.x, contactPoint.y, (contactPoint.x + contactNormal.x * 20.0f), (contactPoint.y + contactNormal.y * 20.0f));
-			shape.setColor(Color.WHITE);
-		}
 		shape.rect(rect.x, rect.y, rect.width, rect.height);
-		shape.setColor(Color.RED);
-		shape.line(rayOrigin.x, rayOrigin.y, mx(), my());
-		shape.circle(contactPoint.x, contactPoint.y, 5);
+		shape.setColor(Color.BLUE);
+		shape.rect(dynamicRect.x, dynamicRect.y, dynamicRect.width, dynamicRect.height);
+		//shape.rect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height);
 		shape.end();
 
 	}
@@ -123,11 +124,22 @@ public class GdxExample extends ApplicationAdapter {
 		return true;
 	}
 
-	public boolean dynamicRectVsRect(Rectangle dynamicRect, Rectangle rect, Vector2 velocity) {
+	public boolean dynamicRectVsRect(Rectangle dynamicRect, Rectangle rect, Vector2 velocity, Vector2 contactPoint, Vector2 contactNormal, Rectangle exp) {
 		if (velocity.x == 0 && velocity.y == 0)
 			return false;
 
-		return true;
+		Vector2 ray0 = new Vector2();
+		dynamicRect.getCenter(ray0);
+
+		Rectangle expandedRectangle = new Rectangle();
+		expandedRectangle.setWidth(rect.width + dynamicRect.width);
+		expandedRectangle.setHeight(rect.height + dynamicRect.height);
+		Vector2 center = new Vector2();
+		rect.getCenter(center);
+		expandedRectangle.setCenter(center);
+		exp.set(expandedRectangle);
+
+		return rayVsRect(ray0, velocity, expandedRectangle, contactPoint, contactNormal);
 	}
 
 	public float mx() {
