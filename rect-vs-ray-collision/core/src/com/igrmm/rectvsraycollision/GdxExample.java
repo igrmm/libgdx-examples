@@ -57,6 +57,7 @@ public class GdxExample extends ApplicationAdapter {
 		shape.line(rayOrigin.x, rayOrigin.y, mx(), my());
 		shape.circle(contactPoint.x, contactPoint.y, 5);
 		shape.end();
+
 	}
 
 	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contactPoint, Vector2 contactNormal) {
@@ -118,6 +119,13 @@ public class GdxExample extends ApplicationAdapter {
 			else
 				contactNormal.set(0, -1);
 		}
+
+		return true;
+	}
+
+	public boolean dynamicRectVsRect(Rectangle dynamicRect, Rectangle rect, Vector2 velocity) {
+		if (velocity.x == 0 && velocity.y == 0)
+			return false;
 
 		return true;
 	}
