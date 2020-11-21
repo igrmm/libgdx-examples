@@ -134,4 +134,14 @@ public class GdxExample extends ApplicationAdapter {
 	public void dispose() {
 		shape.dispose();
 	}
+
+	private class BoundingBox {
+		Rectangle rectangle;
+		Vector2 velocity;
+
+		public BoundingBox(float x, float y, float width, float height) {
+			rectangle = new Rectangle(x, y, width, height);
+			velocity = new Vector2();
+		}
+	}
 }
