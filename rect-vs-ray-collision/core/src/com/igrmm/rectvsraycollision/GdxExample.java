@@ -16,10 +16,7 @@ public class GdxExample extends ApplicationAdapter {
 
 	Rectangle rect;
 	Rectangle dynamicRect;
-	Rectangle expandedRect;
 	Vector2 velocity;
-	Vector2 contactPoint;
-	Vector2 contactNormal;
 
 	@Override
 	public void create() {
@@ -27,10 +24,7 @@ public class GdxExample extends ApplicationAdapter {
 		shape = new ShapeRenderer();
 		rect = new Rectangle(0.0f, 0.0f, 100.0f, 100.0f);
 		dynamicRect = new Rectangle(0.0f, 200.0f, 100.0f, 100.0f);
-		expandedRect = new Rectangle();
-		velocity = new Vector2(5.0f, 0.0f);
-		contactPoint = new Vector2();
-		contactNormal = new Vector2();
+		velocity = new Vector2(0.0f, 0.0f);
 	}
 
 	@Override
@@ -46,22 +40,23 @@ public class GdxExample extends ApplicationAdapter {
 		shape.setProjectionMatrix(cam.combined);
 
 		//Simulation
-		if (!dynamicRectVsRect(dynamicRect, rect, velocity, contactPoint, contactNormal, expandedRect)) {
-			dynamicRect.x += velocity.x;
+		velocity.x = 37.3f;
+		Collision collision = new Collision();
+		if (dynamicRectVsRect(dynamicRect, rect, velocity, collision)) {
+			velocity.x += Math.abs(velocity.x) * collision.normal.x * (1.0f - collision.time);
 		}
+		dynamicRect.x += velocity.x;
 
 		//Drawing
 		shape.begin(ShapeRenderer.ShapeType.Filled);
-		shape.setColor(Color.WHITE);
+		shape.setColor(Color.RED);
 		shape.rect(rect.x, rect.y, rect.width, rect.height);
 		shape.setColor(Color.BLUE);
 		shape.rect(dynamicRect.x, dynamicRect.y, dynamicRect.width, dynamicRect.height);
-		//shape.rect(expandedRect.x, expandedRect.y, expandedRect.width, expandedRect.height);
 		shape.end();
-
 	}
 
-	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Vector2 contactPoint, Vector2 contactNormal) {
+	public boolean rayVsRect(Vector2 ray0, Vector2 ray1, Rectangle rect, Collision collision) {
 
 		/*
 			    Ray equation
@@ -106,25 +101,26 @@ public class GdxExample extends ApplicationAdapter {
 		if (tMax < 0) return false;
 
 		//set contact point from ray equation with t value
-		contactPoint.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
+		collision.point.set(ray0.x + (ray1.x * tMin), ray0.y + (ray1.y * tMin));
+		collision.time = tMin;
 
 		//set contact normal for collision solving
 		if (t0X > t0Y) {
 			if (ray0.x < 0)
-				contactNormal.set(1, 0);
+				collision.normal.set(1, 0);
 			else
-				contactNormal.set(-1, 0);
+				collision.normal.set(-1, 0);
 		} else if (t0X < t0Y) {
 			if (ray0.y < 0)
-				contactNormal.set(0, 1);
+				collision.normal.set(0, 1);
 			else
-				contactNormal.set(0, -1);
+				collision.normal.set(0, -1);
 		}
 
 		return true;
 	}
 
-	public boolean dynamicRectVsRect(Rectangle dynamicRect, Rectangle rect, Vector2 velocity, Vector2 contactPoint, Vector2 contactNormal, Rectangle exp) {
+	public boolean dynamicRectVsRect(Rectangle dynamicRect, Rectangle rect, Vector2 velocity, Collision collision) {
 		if (velocity.x == 0 && velocity.y == 0)
 			return false;
 
@@ -137,17 +133,8 @@ public class GdxExample extends ApplicationAdapter {
 		Vector2 center = new Vector2();
 		rect.getCenter(center);
 		expandedRectangle.setCenter(center);
-		exp.set(expandedRectangle);
 
-		return rayVsRect(ray0, velocity, expandedRectangle, contactPoint, contactNormal);
-	}
-
-	public float mx() {
-		return (float) Gdx.input.getX();
-	}
-
-	public float my() {
-		return (float) Gdx.graphics.getHeight() - Gdx.input.getY();
+		return rayVsRect(ray0, velocity, expandedRectangle, collision);
 	}
 
 	@Override
@@ -155,13 +142,15 @@ public class GdxExample extends ApplicationAdapter {
 		shape.dispose();
 	}
 
-	private class BoundingBox {
-		Rectangle rectangle;
-		Vector2 velocity;
+	private class Collision {
+		Vector2 point;
+		Vector2 normal;
+		float time;
 
-		public BoundingBox(float x, float y, float width, float height) {
-			rectangle = new Rectangle(x, y, width, height);
-			velocity = new Vector2();
+		public Collision() {
+			point = new Vector2();
+			normal = new Vector2();
+			time = 0;
 		}
 	}
 }
